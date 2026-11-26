@@ -1,0 +1,126 @@
+index.html<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#030914">
+  <meta name="description" content="NOVA Personal AI Workstation">
+  <title>NOVA Desktop</title>
+
+  <link rel="stylesheet" href="style.css">
+  <link rel="manifest" href="manifest.json">
+
+  <script src="app.js" defer></script>
+</head>
+
+<body>
+
+  <div class="app">
+
+    <header class="topbar">
+      <div class="brand">
+        <div class="logo">N</div>
+        <div>
+          <h1>NOVA</h1>
+          <span>PERSONAL AI SYSTEM</span>
+        </div>
+      </div>
+
+      <div class="status">
+        <span class="dot"></span> SYSTEM ONLINE
+      </div>
+    </header>
+
+    <aside class="sidebar">
+      <button id="newChat">+ New conversation</button>
+
+      <h3>WORKSPACE</h3>
+      <div class="side-item">◈ Conversations</div>
+      <div class="side-item">▧ Image analysis</div>
+      <div class="side-item">◉ Memory</div>
+      <div class="side-item">⚙ Settings</div>
+
+      <div class="profile">
+        <div class="avatar">N</div>
+        <div>
+          <strong>NOVA AI</strong>
+          <small>Personal assistant</small>
+        </div>
+      </div>
+    </aside>
+
+    <main>
+      <section class="welcome">
+        <div class="core-label">
+          <span class="dot"></span>
+          NOVA INTELLIGENCE CORE
+        </div>
+
+        <div class="core-stage">
+          <div class="orb">
+            <div class="orb-ring ring-one"></div>
+            <div class="orb-ring ring-two"></div>
+            <div class="orb-ring ring-three"></div>
+
+            <div class="orb-inner">
+              <div class="orb-core"></div>
+              <div class="core-glow"></div>
+            </div>
+
+            <div class="orbit-dot"></div>
+          </div>
+        </div>
+
+        <h2>I'm listening.</h2>
+        <p>Your intelligence. Your assistant. Your NOVA.</p>
+
+        <div class="core-status">
+          <div>
+            <span>CORE</span>
+            <strong>ACTIVE</strong>
+          </div>
+          <div>
+            <span>NETWORK</span>
+            <strong>CONNECTED</strong>
+          </div>
+          <div>
+            <span>AI SYSTEM</span>
+            <strong>READY</strong>
+          </div>
+        </div>
+      </section>
+
+      <section class="chat-area">
+        <div class="section-heading">
+          <span>CONVERSATION</span>
+          <span class="live-indicator">● LIVE SESSION</span>
+        </div>
+
+        <section id="chat" class="chat">
+          <div class="message bot">
+            <strong>NOVA</strong>
+            <p>Hello. I'm NOVA, your personal AI assistant. What would you like to explore today?</p>
+          </div>
+        </section>
+      </section>
+
+      <div class="composer">
+        <div class="tools">
+          <button id="voiceBtn">🎙 Voice</button>
+          <button id="imageBtn">▧ Image</button>
+          <input type="file" id="imageInput" accept="image/*" hidden>
+        </div>
+
+        <div class="input-row">
+          <input id="prompt" placeholder="Communicate with NOVA...">
+          <button id="sendBtn">➤</button>
+        </div>
+
+        <small>N O V A · ARTIFICIAL INTELLIGENCE SYSTEM</small>
+      </div>
+    </main>
+
+  </div>
+
+</body>
+</html>
