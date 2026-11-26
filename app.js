@@ -1,7 +1,7 @@
 /* ============================================================
    NOVA V18 — COMPLETE INTEGRATED AI WORKSTATION
 
-   FEATURES
+   FEATuRES
    1. AI Chat — WebLLM
    2. Persistent Chat History
    3. Persistent Memory
@@ -268,8 +268,22 @@ function installPanelCloseSystem() {
    5. CHAT DISPLAY
 ============================================================ */
 
-function getChatElement() {
-  return document.getElementById("chat");
+
+function addMessage(role, content, citations = [], searchedWeb = false) {
+  const message = {
+    role,
+    content: String(content),
+    citations: Array.isArray(citations) ? citations : [],
+    searchedWeb: Boolean(searchedWeb),
+    timestamp: new Date().toISOString()
+  };
+
+  State.messages.push(message);
+  Store.set("messages", State.messages);
+
+  renderMessage(message);
+
+  return message;
 }
 
 function renderMessage(message) {
@@ -307,35 +321,67 @@ function renderMessage(message) {
   content.style.marginTop = "6px";
 
   wrapper.append(label, content);
-  chat.appendChild(wrapper);
 
+  if (message.role === "assistant" && message.searchedWeb) {
+    const searchLabel = document.createElement("div");
+    searchLabel.textContent = "🌐 WEB SEARCH USED";
+    searchLabel.style.marginTop = "12px";
+    searchLabel.style.fontSize = "12px";
+    searchLabel.style.color = "#39dfff";
+    wrapper.appendChild(searchLabel);
+  }
+
+  if (
+    message.role === "assistant" &&
+    Array.isArray(message.citations) &&
+    message.citations.length > 0
+  ) {
+    const sources = document.createElement("div");
+
+    sources.style.marginTop = "10px";
+    sources.style.fontSize = "13px";
+
+    const heading = document.createElement("strong");
+    heading.textContent = "Sources";
+    sources.appendChild(heading);
+
+    message.citations.forEach((source, index) => {
+      try {
+        const url = new URL(source.url);
+
+        if (!["https:", "http:"].includes(url.protocol)) return;
+
+        const link = document.createElement("a");
+
+        link.href = url.href;
+        link.textContent =
+          `${index + 1}. ${source.title || "Source"}`;
+
+        link.target = "_blank";
+        link.rel = "noopener noreferrer";
+
+        Object.assign(link.style, {
+          display: "block",
+          color: "#39dfff",
+          marginTop: "6px",
+          overflowWrap: "anywhere"
+        });
+
+        sources.appendChild(link);
+      } catch {
+        // Ignore invalid source URLs.
+      }
+    });
+
+    if (sources.querySelector("a")) {
+      wrapper.appendChild(sources);
+    }
+  }
+
+  chat.appendChild(wrapper);
   chat.scrollTop = chat.scrollHeight;
 }
 
-function displayStoredMessages() {
-  const chat = getChatElement();
-
-  if (!chat) return;
-
-  chat.innerHTML = "";
-
-  State.messages.forEach(renderMessage);
-}
-
-function addMessage(role, content) {
-  const message = {
-    role,
-    content: String(content),
-    timestamp: new Date().toISOString()
-  };
-
-  State.messages.push(message);
-  Store.set("messages", State.messages);
-
-  renderMessage(message);
-
-  return message;
-}
 
 /* ============================================================
    6. WEBLLM ENGINE
@@ -521,8 +567,10 @@ async function sendMessage() {
 
     const memoryContext = getMemoryContext();
 
-    let answer = "";
-    let onlineSuccess = false;
+ let answer = "";
+let onlineSuccess = false;
+let citations = [];
+let searchedWeb = false;   
 
     // PRIMARY ENGINE: ONLINE AI
     if (State.session?.access_token) {
@@ -544,8 +592,10 @@ async function sendMessage() {
           throw new Error("Online AI returned an empty response.");
         }
 
-        answer = result.answer;
-        onlineSuccess = true;
+answer = result.answer;
+citations = result.citations || [];
+searchedWeb = result.searchedWeb || false;
+onlineSuccess = true;
 
         logActivity("Online AI response generated.");
 
@@ -589,7 +639,7 @@ async function sendMessage() {
       logActivity("Offline AI response generated.");
     }
 
-    addMessage("assistant", answer);
+    addMessage("assistant", answer, citations, searchedWeb);
 
   } catch (error) {
     console.error("NOVA AI error:", error);
