@@ -470,8 +470,10 @@ function processMemoryCommand(text) {
   return false;
 }
 
+
 /* ============================================================
-   8. SEND MESSAGE — V18 RELIABILITY FIX
+   8. SEND MESSAGE — NOVA AI 2.0
+   Online OpenAI + Offline WebLLM fallback
 ============================================================ */
 
 async function sendMessage() {
@@ -480,7 +482,7 @@ async function sendMessage() {
   const promptInput = document.getElementById("prompt");
 
   if (!promptInput) {
-    notify("Prompt field not found. Check your HTML.");
+    notify("Prompt field not found.");
     return;
   }
 
@@ -495,10 +497,7 @@ async function sendMessage() {
   State.generating = true;
 
   const sendButton = document.getElementById("sendBtn");
-
-  const originalText = sendButton
-    ? sendButton.textContent
-    : "Send";
+  const originalText = sendButton?.textContent || "Send";
 
   if (sendButton) {
     sendButton.disabled = true;
@@ -506,35 +505,13 @@ async function sendMessage() {
   }
 
   promptInput.value = "";
-
   addMessage("user", text);
 
   try {
     if (processMemoryCommand(text)) return;
 
-    const engine = await initializeAI();
-
-    if (!engine) {
-      addMessage(
-        "assistant",
-        "I couldn't initialize the AI engine. Check your internet connection and try again."
-      );
-
-      return;
-    }
-
-    const systemPrompt = {
-      role: "system",
-      content:
-        "You are NOVA, a helpful personal AI assistant. " +
-        "Answer clearly and accurately. " +
-        "Help with learning, planning, writing, programming, projects and general questions. " +
-        "Do not claim to perform actions you have not performed." +
-        getMemoryContext()
-    };
-
     const history = State.messages
-      .slice(-16)
+      .slice(-12)
       .map(message => ({
         role: message.role === "assistant"
           ? "assistant"
@@ -542,26 +519,84 @@ async function sendMessage() {
         content: message.content
       }));
 
-    const response = await engine.chat.completions.create({
-      messages: [systemPrompt, ...history],
-      temperature: 0.7,
-      max_tokens: 700
-    });
+    const memoryContext = getMemoryContext();
 
-    const answer =
-      response.choices?.[0]?.message?.content ||
-      "I couldn't generate a response.";
+    let answer = "";
+    let onlineSuccess = false;
+
+    // PRIMARY ENGINE: ONLINE AI
+    if (State.session?.access_token) {
+      try {
+        notify("Connecting to NOVA Online AI...");
+
+        const result = await backendRequest("/api/chat", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            messages: history,
+            memoryContext
+          })
+        });
+
+        if (!result?.answer) {
+          throw new Error("Online AI returned an empty response.");
+        }
+
+        answer = result.answer;
+        onlineSuccess = true;
+
+        logActivity("Online AI response generated.");
+
+      } catch (error) {
+        console.warn("Online AI unavailable:", error);
+        notify("Online AI unavailable. Switching to offline mode.");
+      }
+    }
+
+    // FALLBACK ENGINE: LOCAL WEBLLM
+    if (!onlineSuccess) {
+      const engine = await initializeAI();
+
+      if (!engine) {
+        throw new Error(
+          "Neither online nor offline AI is currently available. Check your connection and sign-in status."
+        );
+      }
+
+      const systemPrompt = {
+        role: "system",
+        content:
+          "You are NOVA, a helpful personal AI assistant. " +
+          "Answer clearly and accurately. " +
+          "Help with learning, reasoning, programming, writing and projects. " +
+          "Use saved memories only when relevant. " +
+          "Do not claim to perform actions you have not performed.\n\n" +
+          memoryContext
+      };
+
+      const response = await engine.chat.completions.create({
+        messages: [systemPrompt, ...history],
+        temperature: 0.7,
+        max_tokens: 700
+      });
+
+      answer =
+        response.choices?.[0]?.message?.content ||
+        "I couldn't generate a response.";
+
+      logActivity("Offline AI response generated.");
+    }
 
     addMessage("assistant", answer);
 
-    logActivity("AI response generated");
-
   } catch (error) {
-    console.error("NOVA send error:", error);
+    console.error("NOVA AI error:", error);
 
     addMessage(
       "assistant",
-      "An error occurred while generating your response. Please try again."
+      "NOVA encountered an error: " + error.message
     );
 
   } finally {
@@ -571,16 +606,13 @@ async function sendMessage() {
 
     if (currentButton) {
       currentButton.disabled = false;
-      currentButton.textContent = originalText || "Send";
+      currentButton.textContent = originalText;
     }
 
-    const currentPrompt = document.getElementById("prompt");
-
-    if (currentPrompt) {
-      currentPrompt.focus();
-    }
+    document.getElementById("prompt")?.focus();
   }
 }
+
 
 /* ============================================================
    9. PROJECT MANAGEMENT
