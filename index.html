@@ -1,4 +1,4 @@
-index.html<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -121,6 +121,13 @@ index.html<!DOCTYPE html>
     </main>
 
   </div>
-
+<script>
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("./service-worker.js")
+      .catch(error => console.error("NOVA offline setup failed:", error));
+  });
+}
+</script>
 </body>
 </html>
