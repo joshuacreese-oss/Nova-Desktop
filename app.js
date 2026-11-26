@@ -1677,6 +1677,272 @@ if (document.readyState === "loading") {
     once: true
   });
 } else {
+/* ============================================================
+   NOVA MEMORY 2.0
+   Enhanced persistent memory engine
+   Compatible with NOVA V18 and V17 storage
+============================================================ */
+
+remember = function(text, category = "general") {
+  if (!text || !String(text).trim()) return null;
+
+  const content = String(text).trim();
+
+  if (!Array.isArray(State.memory)) {
+    State.memory = [];
+  }
+
+  // Normalize older memories
+  State.memory = State.memory.map(item =>
+    typeof item === "string"
+      ? { content: item, date: new Date().toISOString(), category: "general", pinned: false }
+      : item
+  );
+
+  // Prevent duplicates
+  const duplicate = State.memory.find(item =>
+    item.content.toLowerCase() === content.toLowerCase()
+  );
+
+  if (duplicate) {
+    duplicate.date = new Date().toISOString();
+    Store.set("memory", State.memory);
+    return duplicate;
+  }
+
+  const memory = {
+    id: "mem_" + Date.now(),
+    content,
+    category,
+    date: new Date().toISOString(),
+    pinned: false
+  };
+
+  State.memory.push(memory);
+
+  Store.set("memory", State.memory);
+
+  return memory;
+};
+
+
+/* SEARCH MEMORY */
+
+searchMemory = function(query) {
+  const term = String(query || "").toLowerCase().trim();
+
+  if (!term) return State.memory;
+
+  return State.memory.filter(memory =>
+    memory.content.toLowerCase().includes(term) ||
+    (memory.category || "").toLowerCase().includes(term)
+  );
+};
+
+
+/* FORGET INDIVIDUAL MEMORY */
+
+forgetMemory = function(query) {
+  const term = String(query || "").toLowerCase().trim();
+
+  if (!term) return 0;
+
+  const before = State.memory.length;
+
+  State.memory = State.memory.filter(memory =>
+    !memory.content.toLowerCase().includes(term)
+  );
+
+  Store.set("memory", State.memory);
+
+  return before - State.memory.length;
+};
+
+
+/* PIN IMPORTANT MEMORIES */
+
+pinMemory = function(query, pinned = true) {
+  const term = String(query || "").toLowerCase().trim();
+
+  const memory = State.memory.find(item =>
+    item.content.toLowerCase().includes(term)
+  );
+
+  if (!memory) return false;
+
+  memory.pinned = pinned;
+
+  Store.set("memory", State.memory);
+
+  return true;
+};
+
+
+/* BUILD AI MEMORY CONTEXT */
+
+getMemoryContext = function() {
+  if (!State.memory.length) return "";
+
+  const memories = [...State.memory].sort((a, b) => {
+    if (a.pinned !== b.pinned) {
+      return a.pinned ? -1 : 1;
+    }
+
+    return new Date(b.date) - new Date(a.date);
+  });
+
+  const selected = memories.slice(0, 40);
+
+  return `
+NOVA LONG-TERM MEMORY
+
+Use these saved facts when relevant.
+Do not assume outdated information is still correct.
+
+${selected.map(item =>
+  `[${item.category || "general"}] ${item.content}`
+).join("\n")}
+
+END OF MEMORY
+`;
+};
+
+
+/* MEMORY RESPONSE DISPLAY */
+
+function novaMemoryReply(message) {
+  const chat = document.getElementById("chat");
+
+  if (!chat) return;
+
+  const bubble = document.createElement("div");
+  bubble.className = "message bot";
+
+  const heading = document.createElement("strong");
+  heading.textContent = "NOVA";
+
+  const paragraph = document.createElement("p");
+  paragraph.textContent = message;
+
+  bubble.appendChild(heading);
+  bubble.appendChild(paragraph);
+
+  chat.appendChild(bubble);
+  chat.scrollTop = chat.scrollHeight;
+}
+
+
+/* MEMORY COMMAND PROCESSOR */
+
+processMemoryCommand = function(input) {
+  const text = String(input || "").trim();
+
+  let match;
+
+  // SAVE MEMORY
+  match = text.match(/^remember(?: that)?\s+(.+)/i);
+
+  if (match) {
+    const memory = remember(match[1]);
+
+    novaMemoryReply(
+      memory
+        ? "Memory saved successfully."
+        : "I could not save that memory."
+    );
+
+    return true;
+  }
+
+  // SHOW ALL MEMORIES
+  if (/^(show|list|view) memories$|^show memory$/i.test(text)) {
+    if (!State.memory.length) {
+      novaMemoryReply("My memory is currently empty.");
+    } else {
+      const list = State.memory.map((item, index) =>
+        `${index + 1}. ${item.pinned ? "📌 " : ""}${item.content}`
+      ).join("\n");
+
+      novaMemoryReply("Here is what I remember:\n" + list);
+    }
+
+    return true;
+  }
+
+  // SEARCH MEMORY
+  match = text.match(/^(?:search|find) memory(?: for)?\s+(.+)/i);
+
+  if (match) {
+    const results = searchMemory(match[1]);
+
+    novaMemoryReply(
+      results.length
+        ? "I found:\n" + results.map(item => item.content).join("\n")
+        : "I couldn't find a matching memory."
+    );
+
+    return true;
+  }
+
+  // FORGET A SPECIFIC MEMORY
+  match = text.match(/^forget memory(?: about)?\s+(.+)/i);
+
+  if (match) {
+    const removed = forgetMemory(match[1]);
+
+    novaMemoryReply(
+      removed
+        ? `Removed ${removed} matching memory item(s).`
+        : "I couldn't find that memory."
+    );
+
+    return true;
+  }
+
+  // PIN MEMORY
+  match = text.match(/^pin memory\s+(.+)/i);
+
+  if (match) {
+    const success = pinMemory(match[1]);
+
+    novaMemoryReply(
+      success
+        ? "Memory pinned successfully."
+        : "I couldn't find that memory."
+    );
+
+    return true;
+  }
+
+  // CLEAR ALL MEMORY
+  if (/^clear memory$/i.test(text)) {
+    State.memory = [];
+
+    Store.set("memory", State.memory);
+
+    novaMemoryReply("All saved memories have been cleared.");
+
+    return true;
+  }
+
+  return false;
+};
+
+
+/* UPDATE PUBLIC NOVA API */
+
+window.NOVA_API = window.NOVA_API || {};
+
+Object.assign(window.NOVA_API, {
+  remember,
+  getMemory: () => State.memory,
+  searchMemory,
+  forgetMemory,
+  pinMemory
+});
+
+console.log("NOVA Memory 2.0 initialized.");
+
   startNOVA();
 }
 
