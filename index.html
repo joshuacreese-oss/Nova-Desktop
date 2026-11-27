@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -14,113 +15,221 @@
 </head>
 
 <body>
+<div class="app">
 
-  <div class="app">
+  <header class="topbar">
+    <div class="brand">
+      <div class="logo">N</div>
+      <div>
+        <h1>NOVA</h1>
+        <span>PERSONAL AI SYSTEM</span>
+      </div>
+    </div>
 
-    <header class="topbar">
-      <div class="brand">
-        <div class="logo">N</div>
-        <div>
-          <h1>NOVA</h1>
-          <span>PERSONAL AI SYSTEM</span>
+    <div class="status">
+      <span class="dot"></span> SYSTEM ONLINE
+    </div>
+  </header>
+
+  <aside class="sidebar">
+    <button id="newChat">+ New conversation</button>
+
+    <h3>WORKSPACE</h3>
+
+    <div class="side-item" id="chatNavBtn">◈ Conversations</div>
+    <div class="side-item">▧ Image analysis</div>
+    <div class="side-item">◉ Memory</div>
+    <button class="side-item" id="notebookNavBtn" type="button">
+      ▤ NOVA Notebook
+    </button>
+    <div class="side-item">⚙ Settings</div>
+
+    <div class="profile">
+      <div class="avatar">N</div>
+      <div>
+        <strong>NOVA AI</strong>
+        <small>Personal assistant</small>
+      </div>
+    </div>
+  </aside>
+
+  <main id="chatWorkspace">
+
+    <section class="welcome">
+      <div class="core-label">
+        <span class="dot"></span>
+        NOVA INTELLIGENCE CORE
+      </div>
+
+      <div class="core-stage">
+        <div class="orb">
+          <div class="orb-ring ring-one"></div>
+          <div class="orb-ring ring-two"></div>
+          <div class="orb-ring ring-three"></div>
+
+          <div class="orb-inner">
+            <div class="orb-core"></div>
+            <div class="core-glow"></div>
+          </div>
+
+          <div class="orbit-dot"></div>
         </div>
       </div>
 
-      <div class="status">
-        <span class="dot"></span> SYSTEM ONLINE
+      <h2>I'm listening.</h2>
+      <p>Your intelligence. Your assistant. Your NOVA.</p>
+
+      <div class="core-status">
+        <div><span>CORE</span><strong>ACTIVE</strong></div>
+        <div><span>NETWORK</span><strong>CONNECTED</strong></div>
+        <div><span>AI SYSTEM</span><strong>READY</strong></div>
       </div>
-    </header>
+    </section>
 
-    <aside class="sidebar">
-      <button id="newChat">+ New conversation</button>
-
-      <h3>WORKSPACE</h3>
-      <div class="side-item">◈ Conversations</div>
-      <div class="side-item">▧ Image analysis</div>
-      <div class="side-item">◉ Memory</div>
-      <div class="side-item">⚙ Settings</div>
-
-      <div class="profile">
-        <div class="avatar">N</div>
-        <div>
-          <strong>NOVA AI</strong>
-          <small>Personal assistant</small>
-        </div>
+    <section class="chat-area">
+      <div class="section-heading">
+        <span>CONVERSATION</span>
+        <span class="live-indicator">● LIVE SESSION</span>
       </div>
-    </aside>
 
-    <main>
-      <section class="welcome">
-        <div class="core-label">
-          <span class="dot"></span>
-          NOVA INTELLIGENCE CORE
-        </div>
-
-        <div class="core-stage">
-          <div class="orb">
-            <div class="orb-ring ring-one"></div>
-            <div class="orb-ring ring-two"></div>
-            <div class="orb-ring ring-three"></div>
-
-            <div class="orb-inner">
-              <div class="orb-core"></div>
-              <div class="core-glow"></div>
-            </div>
-
-            <div class="orbit-dot"></div>
-          </div>
-        </div>
-
-        <h2>I'm listening.</h2>
-        <p>Your intelligence. Your assistant. Your NOVA.</p>
-
-        <div class="core-status">
-          <div>
-            <span>CORE</span>
-            <strong>ACTIVE</strong>
-          </div>
-          <div>
-            <span>NETWORK</span>
-            <strong>CONNECTED</strong>
-          </div>
-          <div>
-            <span>AI SYSTEM</span>
-            <strong>READY</strong>
-          </div>
+      <section id="chat" class="chat">
+        <div class="message bot">
+          <strong>NOVA</strong>
+          <p>Hello. I'm NOVA, your personal AI assistant. What would you like to explore today?</p>
         </div>
       </section>
+    </section>
 
-      <section class="chat-area">
-        <div class="section-heading">
-          <span>CONVERSATION</span>
-          <span class="live-indicator">● LIVE SESSION</span>
+    <div class="composer">
+      <div class="tools">
+        <button id="voiceBtn">🎙 Voice</button>
+        <button id="imageBtn">▧ Image</button>
+        <input type="file" id="imageInput" accept="image/*" hidden>
+      </div>
+
+      <div class="input-row">
+        <input id="prompt" placeholder="Communicate with NOVA...">
+        <button id="sendBtn">➤</button>
+      </div>
+
+      <small>N O V A · ARTIFICIAL INTELLIGENCE SYSTEM</small>
+    </div>
+
+  </main>
+
+  <!-- NOVA NOTEBOOK WORKSPACE -->
+
+  <main id="notebookWorkspace" hidden>
+
+    <section class="notebook-header">
+      <div class="core-label">
+        <span class="dot"></span>
+        NOVA KNOWLEDGE SYSTEM
+      </div>
+
+      <h2>NOVA Notebook</h2>
+      <p>Your personal research and learning workspace.</p>
+
+      <button id="backToChatBtn" type="button">
+        ← Return to NOVA Chat
+      </button>
+    </section>
+
+    <section class="notebook-layout">
+
+      <!-- SOURCES -->
+
+      <div class="notebook-panel">
+        <h3>▤ SOURCES</h3>
+        <p>Upload documents and collect research.</p>
+
+        <label for="notebookFileInput" class="upload-area">
+          <span>＋</span>
+          <strong>Add documents</strong>
+          <small>PDF files supported</small>
+        </label>
+
+        <input
+          type="file"
+          id="notebookFileInput"
+          accept=".pdf,application/pdf"
+          multiple
+          hidden
+        >
+
+        <div id="notebookSources">
+          <p class="empty-state">Your sources will appear here.</p>
         </div>
 
-        <section id="chat" class="chat">
-          <div class="message bot">
+        <div class="web-source">
+          <h4>Internet research</h4>
+          <input
+            id="notebookUrlInput"
+            type="url"
+            placeholder="Paste a webpage URL..."
+          >
+          <button id="addWebSourceBtn" type="button">
+            Add web source
+          </button>
+        </div>
+      </div>
+
+      <!-- NOTEBOOK AI -->
+
+      <div class="notebook-panel notebook-chat-panel">
+        <h3>◈ NOTEBOOK AI</h3>
+        <p>Ask questions about your collected sources.</p>
+
+        <div id="notebookChat" class="notebook-chat">
+          <div class="notebook-welcome">
             <strong>NOVA</strong>
-            <p>Hello. I'm NOVA, your personal AI assistant. What would you like to explore today?</p>
+            <p>Upload your sources to begin exploring your knowledge.</p>
           </div>
-        </section>
-      </section>
-
-      <div class="composer">
-        <div class="tools">
-          <button id="voiceBtn">🎙 Voice</button>
-          <button id="imageBtn">▧ Image</button>
-          <input type="file" id="imageInput" accept="image/*" hidden>
         </div>
 
-        <div class="input-row">
-          <input id="prompt" placeholder="Communicate with NOVA...">
-          <button id="sendBtn">➤</button>
+        <div class="notebook-input-row">
+          <input
+            id="notebookPrompt"
+            placeholder="Ask about your sources..."
+          >
+          <button id="notebookSendBtn" type="button">➤</button>
         </div>
-
-        <small>N O V A · ARTIFICIAL INTELLIGENCE SYSTEM</small>
       </div>
-    </main>
 
-  </div>
+      <!-- STUDY STUDIO -->
+
+      <div class="notebook-panel">
+        <h3>✧ STUDY STUDIO</h3>
+        <p>Turn your sources into learning materials.</p>
+
+        <div class="studio-actions">
+          <button id="summaryBtn" type="button">
+            ◈ Generate summary
+          </button>
+
+          <button id="flashcardsBtn" type="button">
+            ▤ Create flashcards
+          </button>
+
+          <button id="quizBtn" type="button">
+            ✎ Generate quiz
+          </button>
+
+          <button id="studyGuideBtn" type="button">
+            ▧ Create study guide
+          </button>
+        </div>
+
+        <div id="studioOutput" class="studio-output">
+          Your generated study materials will appear here.
+        </div>
+      </div>
+
+    </section>
+  </main>
+
+</div>
+
 <script>
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
@@ -129,5 +238,6 @@ if ("serviceWorker" in navigator) {
   });
 }
 </script>
+
 </body>
 </html>
